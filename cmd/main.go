@@ -1,10 +1,13 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"time"
+
+	"github.com/albertokff/empreendify-saas/internal/controllers"
 	"github.com/albertokff/empreendify-saas/internal/database"
 	"github.com/albertokff/empreendify-saas/internal/models"
-	"github.com/albertokff/empreendify-saas/internal/services"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -18,21 +21,15 @@ func main() {
 
 	r := gin.Default() // Aqui estou iniciando o roteador, e já aplicando 2 middlewares: logs e recovery.
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:	[]string{"http://localhost:5173"},
+		AllowMethods:	[]string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:	[]string{"Origin", "Content-Type"},
+		AllowCredentials: true,
+		MaxAge:			  12 * time.Hour,
+	}))
 
-	r.POST("/services", services.CreateService)
-
-	r.GET("/services", services.GetServices)
-
-	r.GET("/services/:id", services.GetServiceById)
-
-	r.POST("/services/:id", services.UpdateService)
-
-	r.DELETE("/services/:id", services.DeleteService)
+	controllers.RegisterServiceRoutes(r)
 
 	r.Run()
 }
